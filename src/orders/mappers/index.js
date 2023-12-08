@@ -1,43 +1,50 @@
-export const mapOrderResponse = (response) => {
-  let order = {};
-  for (let i = 0; i < response.length; i++) {
-    let item = response[i];
-    if (i === 0) {
-      order.id = item.id;
-      order.order_num = item.order_num;
-      order.createdAT = item.createdAT;
-      order.final_price = item.final_price;
-      order.status = item.status;
-      order.products = [];
-    }
+export const mapOrderResponse = (rows) => {
+  const order = {
+    id: rows[0].id,
+    order_num: rows[0].order_num,
+    createdAT: rows[0].createdAT,
+    final_price: rows[0].final_price,
+    status: rows[0].status,
+    order_details: [],
+  };
 
-    order.products.push({
-      product_id: item.product_id,
-      order_detail_total: item.order_detail_total,
-      name: item.name,
-      unit_price: item.unit_price,
-      qty: item.qty,
-      product_total: item.product_total,
+  rows.forEach((row) => {
+    order.order_details.push({
+      qty: row.qty,
+      detail_unit_price: row.detail_unit_price,
+      total_price: row.total_price,
+      product_id: row.product_id,
+      product_name: row.product_name,
+      product_unit_price: row.product_unit_price,
     });
-  }
+  });
+
   return order;
 };
 
-export const mapOrders = (response) => {
-  let orders = {};
-  response.forEach((element) => {
-    const key = element.order_id;
-    if (orders[key]) {
-      orders[key] = {
-        ...element,
-        numProds: (orders[key].numProds ?? 0) + 1,
-      };
-    } else {
-      orders[key] = {
-        ...element,
-        numProds: 1,
+export const mapOrders = (res) => {
+  const orders = {};
+  res.forEach((order) => {
+    if (!orders[order.id]) {
+      orders[order.id] = {
+        id: order.id,
+        order_num: order.order_num,
+        createdAT: order.createdAT,
+        final_price: Number(order.final_price),
+        status: order.status,
+        order_details: [],
       };
     }
+
+    orders[order.id].order_details.push({
+      qty: Number(order.qty),
+      detail_unit_price: Number(order.detail_unit_price),
+      total_price: Number(order.total_price),
+      product_id: order.product_id,
+      product_name: order.product_name,
+      product_unit_price: Number(order.product_unit_price),
+    });
   });
+
   return Object.values(orders);
 };
